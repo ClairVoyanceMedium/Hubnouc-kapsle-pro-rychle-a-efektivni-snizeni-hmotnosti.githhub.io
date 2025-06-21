@@ -1940,6 +1940,652 @@
     </p>
 </footer>
 
+<!-- Tchat IA zcela kompletní -->
+
+<title>Chatový asistent s sledováním a hlasovým doprovodem</title>
+
+    <meta name="description" content="Duchovní chatbot pro odčarování, ochranu a očistu aury od Fredericka z ClairVoyanceMedium.com. Rychle získejte zpět vitalitu a klid za jedinečnou cenu.">
+
+    <meta name="keywords" content="prokletí, noční můry, odčarování, ochrana, očista, energetické čištění, jasnovidectví, aura, energie, pomoc, spánek, rituály, duchovní">
+
+    <style>
+        #chat-container {
+            position: fixed;
+            display: inline-block;
+            flex-direction: column;
+            z-index: 999999;
+            font-family: Arial, sans-serif;
+            transition: transform 0.2s;
+        }
+        #chat-bubble {
+            display: flex;
+            justify-content: flex-end;
+            cursor: move;
+        }
+        #chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #FFB6C1, #FF69B4);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(255,105,180,0.7);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            outline: none;
+        }
+        #chat-toggle:hover {
+            transform: scale(1.05);
+        }
+        #voice-toggle {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(145deg, #87CEEB, #5eb6d1);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(135,206,235,0.7);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            transition: transform 0.2s;
+            outline: none;
+        }
+        #voice-toggle:hover {
+            transform: scale(1.05);
+        }
+        #voice-toggle.disabled {
+            background: #808080;
+            box-shadow: 0 0 10px #808080;
+        }
+        #chat-box {
+            background: #111;
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            margin-top: 10px;
+            border: 2px solid #FF1493;
+            box-shadow: 0 0 10px #FF1493;
+            transition: all 0.3s ease;
+            max-height: 400px;
+        }
+        #chat-box.visible {
+            display: flex;
+        }
+        #chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            color: #fff;
+        }
+        #chat-messages p {
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        .bot-message {
+            text-align: left;
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-bottom: 0.8rem;
+            display: inline-block;
+            max-width: 80%;
+            border: 2px solid #FF69B4;
+            box-shadow: 0 0 8px #FF69B4;
+        }
+        .user-message {
+            text-align: right;
+            color: #ffd700;
+            margin-bottom: 0.8rem;
+            border: 2px solid #AED6F1;
+            box-shadow: 0 0 8px #AED6F1;
+            padding: 0.5rem;
+            border-radius: 5px;
+            display: inline-block;
+            max-width: 80%;
+        }
+        #chat-form {
+            display: flex;
+            border-top: 1px solid #333;
+            align-items: center;
+            padding: 0.5rem;
+        }
+        #chat-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            outline: none;
+            color: #333;
+            border-radius: 5px 0 0 5px;
+        }
+        #chat-send {
+            background: #87CEEB;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 0 5px 5px 0;
+            transition: background 0.2s;
+        }
+        #chat-send:hover {
+            background: #5eb6d1;
+        }
+        @media(max-width: 400px) {
+            #chat-container {
+                width: 90%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div id="chat-container">
+    <div id="chat-bubble">
+        <button id="chat-toggle" aria-expanded="false" aria-label="Otevřít chat">💬</button>
+        <button id="voice-toggle" aria-label="Zapnout/Vypnout hlasového asistenta">🎤</button>
+    </div>
+    <div id="chat-box" role="region" aria-label="Chatovací asistent">
+        <div id="chat-messages" aria-live="polite"></div>
+        <form id="chat-form" aria-label="Vstupní formulář pro chatovacího asistenta">
+            <input type="text" id="chat-input" placeholder="Napište svůj dotaz..." aria-label="Zde napište svou zprávu" autocomplete="off">
+            <button type="submit" id="chat-send" aria-label="Odeslat váš dotaz">➤</button>
+        </form>
+    </div>
+</div>
+
+
+<script nonce="xai-ultra2025">
+// Funkce pro sledování v GA4
+function trackClick(label, category = 'Chat', value = null) {
+    console.log(`Sledování: Label=${label}, Category=${category}, Value=${value}`);
+    if (typeof gtag === 'function') {
+        gtag('event', label, { 'event_category': category, 'value': value });
+    }
+}
+
+
+// Překlady a zprávy
+const translations = {
+        greeting: "Vítejte ve světě ClairVoyanceMedium.com! Jsem ClairVoyanceGPT, váš osobní průvodce, připravený pomoci vám získat zpět vitalitu, štíhlost a klid díky našim řešením Victory a dalším spirituálním řešením, které výrazně zlepší vaši fyzickou a duševní pohodu!",
+        thanks: "Rád pomáhám, jsem tu pro vás!",
+        goodbye: "Brzy na viděnou na vaší cestě k vnitřnímu a vnějšímu vítězství s Victory!",
+        notUnderstood: "Nerozumím vašemu dotazu. Můžete to prosím zformulovat jinak?",
+        notUnderstoodAfter: "Zdá se, že si nerozumíme. Prozkoumejte naše tablety Victory na hubnutí nebo náš personalizovaný program pro kompletní pohodu. K dispozici jsou také spirituální služby jako věštění emailem nebo analýza vaší lásky!",
+        grave: "Vaše situace vypadá vážně. Jednejte nyní s našimi řešeními Victory, abyste získali zpět rovnováhu a energii. Prozkoumejte naše programy na webu!",
+        agree: "Výborně, jak vám mohu dále pomoci?"
+    };
+
+
+// Znalostní báze s "Výhodami"
+const knowledgeBase = [
+    { question: "Únava | Vyčerpání | Ospalost | Slabost | Vyčerpanost | Vyhoření", fullAnswer: "Tato drtivá únava je dílem temné entity, která vysává vaši energii; svěřte očistu své aury Frederickovi z ClairVoyanceMedium.com, abyste získali zpět vitalitu. Může to být známka temné entity, která den co den vysává vaši životní energii. Frederick, expert na spirituální očistu, používá starodávné rituály k očištění vaší aury a vyhnání těchto negativních sil. Jednáte-li rychle, můžete získat zpět zářivou vitalitu a jasnou mysl. Výhody: obnovená energie a jasná mysl." },
+    { question: "Noční můry | Vize | Noci | Sny | Spánek | Snění", fullAnswer: "Tyto noční můry nejsou obyčejné sny, jsou výsledkem zlé přítomnosti; nechte Fredericka z ClairVoyanceMedium.com vyhnat tyto stíny a zajistit vám klidné noci. Mohou to být projevy zlé entity, která infiltruje vaši mysl během spánku. Frederick s 25 lety zkušeností ovládá mocné rituály k očištění vašeho prostoru na spaní. Získáte zpět klidné noci a osvěžující spánek. Výhody: regenerující odpočinek a noční klid." },
+    { question: "Chaos | Turbulence | Zmatenost | Zoufalství | Vítr | Úzkost", fullAnswer: "Chaos kolem vás pochází z rušivého prokletí; dovolte Frederickovi z ClairVoyanceMedium.com obnovit pořádek a vaši duševní rovnováhu. Zmatenost a úzkost signalizují rušivé prokletí. Frederick, specialista na odčarování, rozptyluje tyto negativní energie. Získáte zpět duševní stabilitu a vnitřní klid. Výhody: harmonie a vnitřní klid." },
+    { question: "Tíha | Útlak | Dusno | Váha | Úzkost | Drcení", fullAnswer: "Tato tíha, která utlačuje vaši duši, je temná síla; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste se osvobodili a získali zpět lehkost. Tento pocit dusna je typický pro temnou sílu zaměřenou na vaši duši. Frederick zlomí tento vliv cílenými rituály. Budete cítit obnovenou lehkost a energii. Výhody: osvobození a obnovená vitalita." },
+    { question: "Prokletí | Kletba | Zaklínadlo | Kouzlo | Magie | Čarodějnictví", fullAnswer: "Vyčerpání, smůla a noční můry jsou výsledkem kletby, která vás drží v zajetí; použijte Frederickovu pomoc z ClairVoyanceMedium.com k přerušení těchto okultních pout. Trvalá únava a chronická smůla jsou známky prokletí. Frederick vyniká v odčarování, používá mocné rituály k vašemu osvobození. Získáte zpět štěstí a trvalý úspěch. Výhody: obnovená prosperita a zaručené vítězství." },
+    { question: "Neúspěch | Pád | Porážka | Nehoda | Neštěstí | Prohra", fullAnswer: "Opakované neúspěchy jsou způsobeny kletbou blokující vaši cestu; nechte Fredericka z ClairVoyanceMedium.com otevřít vám cestu k úspěchu. Tyto neúspěchy nejsou náhoda: kletba blokuje váš úspěch. Frederick odstraňuje tyto neviditelné překážky, transformuje vaši cestu k zaručenému pokroku. Výhody: vítězství a zaručený pokrok." },
+    { question: "Nespavost | Nepokoj | Bdělé noci | Útěk | Bdění | Obavy", fullAnswer: "Vaše nespavost je vyvolána entitou, která vás připravuje o odpočinek; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste obnovili noční klid. Bdělé noci a neklid jsou způsobeny entitou narušující váš odpočinek. Frederick vyžene tyto vlivy a zaručí vám osvěžující spánek. Výhody: hluboký spánek a denní energie." },
+    { question: "Bolest | Trápení | Utrpení | Pálení | Smutek | Muka", fullAnswer: "Nevysvětlitelné bolesti odrážejí okultní útok na vaše tělo; dovolte Frederickovi z ClairVoyanceMedium.com rozptýlit tuto neviditelnou bolest. Pálení a muka signalizují okultní útok. Frederick s rituály spirituálního léčení přináší okamžitou úlevu. Výhody: okamžité uklidnění a obnovená pohoda." },
+    { question: "Izolace | Samota | Opuštění | Tíseň | Ústup | Chlad", fullAnswer: "Izolace, kterou cítíte, pramení z kletby, která vás odděluje od ostatních; svěřte Frederickovi z ClairVoyanceMedium.com vaše smíření, aby obnovil teplé vztahy. Tato samota je způsobena kletbou, která vás odděluje od ostatních. Frederick zlomí toto prokletí, obnoví spojení a sociální pohodu. Výhody: sblížení a sociální naplnění." },
+    { question: "Kariéra | Práce | Ambice | Stagnace | Blokáda | Fiasko", fullAnswer: "Překážky ve vaší kariéře jsou známkou kletby brzdící vaše ambice; nechte Fredericka z ClairVoyanceMedium.com osvobodit váš potenciál. Stagnace a neúspěchy jsou způsobeny kletbou. Frederick osvobozuje váš potenciál, vede k úspěchu ve vaší kariéře. Výhody: triumf a profesní naplnění." },
+    { question: "Smůla | Neštěstí | Náhoda | Nepřízeň | Osud | Pohroma", fullAnswer: "Smůla, kterou zažíváte, je způsobena temným kouzlem; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste přilákali štěstí. Neštěstí a pohromy jsou dílem kouzla. Frederick očistí vaši auru, přitáhne štěstí a otevře nové příležitosti. Výhody: obnovené možnosti a hojnost." },
+    { question: "Láska | Vášeň | Romantika | Zlomené srdce | Odloučení | Citová vazba", fullAnswer: "Nedostatek lásky je způsoben kletbou uzavírající vaše srdce; dovolte Frederickovi z ClairVoyanceMedium.com oživit váš citový život. Zlomená srdce nebo citová samota jsou způsobeny kletbou. Frederick odstraní tuto bariéru svou milostnou magií, přinese něhu a harmonii. Výhody: náklonnost a citová rovnováha." },
+    { question: "Rodina | Domov | Nesvár | Napětí | Rozkol | Konflikt", fullAnswer: "Rodinná napětí jsou výsledkem okultního stínu; svěřte Frederickovi z ClairVoyanceMedium.com harmonizaci vašich vztahů. Rodinné konflikty jsou způsobeny okultním stínem. Frederick očistí váš domov, obnoví jednotu a klid. Výhody: jednota a rodinná pohoda." },
+    { question: "Děti | Malé děti | Potomstvo | Syn | Dcera | Dítě", fullAnswer: "Bolest vašich dětí odráží temný vliv; obraťte se na Fredericka z ClairVoyanceMedium.com, aby očistil jejich auru. Smutek nebo starosti dětí signalizují temný vliv. Frederick očistí jejich auru, vrátí radost do rodiny. Výhody: štěstí a rodinné naplnění." },
+    { question: "Zvířata | Společníci | Zvířata | Nervozita | Problém | Instinkt", fullAnswer: "Nepokoj vašich zvířat naznačuje temnou přítomnost; nechte Fredericka z ClairVoyanceMedium.com obnovit mír. Neobvyklá nervozita signalizuje temnou přítomnost. Frederick očistí jejich prostředí, zajistí klid vašim společníkům. Výhody: klid a rovnováha pro vaše společníky." },
+    { question: "Dům | Bydlení | Domov | Atmosféra | Temnota | Strach", fullAnswer: "Dusná atmosféra vašeho domova je zamořena temnými energiemi; dovolte Frederickovi z ClairVoyanceMedium.com očistit vaše bydlení. Strach a temnota signalizují temné energie. Frederick promění váš domov v zářivé útočiště. Výhody: pohodlí a domácí naplnění." },
+    { question: "Auto | Vozidlo | Doprava | Porucha | Nebezpečí | Cesta", fullAnswer: "Záhadné poruchy vašeho vozidla jsou způsobeny kletbou; svěřte své auto Frederickovi z ClairVoyanceMedium.com pro bezpečnost. Nehody na silnici pramení z kletby. Frederick očistí vaše vozidlo, zaručí klid. Výhody: klid a ochrana na silnici." },
+    { question: "Přítomnost | Stín | Přízrak | Aura | Chvění | Vpád", fullAnswer: "Pocit, že vás někdo sleduje, je výsledkem zlé entity; nechte Fredericka z ClairVoyanceMedium.com vás ochránit. Chvění signalizuje zlou entitu. Frederick vytvoří mocnou ochranu, zaručí bezpečnost. Výhody: ochrana a duševní klid." },
+    { question: "Úzkost | Obavy | Panika | Hrůza | Děs | Strach", fullAnswer: "Vaše úzkost je generována destruktivním kouzlem; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste nastolili mír. Panika a děs jsou generovány kouzlem. Frederick odstraní tyto energie, vrátí hluboký klid. Výhody: uklidnění a posílená jistota." },
+    { question: "Podrážděnost | Hněv | Frustrace | Vztek | Netrpělivost | Rozčilení", fullAnswer: "Vaše podrážděnost odráží vliv okultní síly; použijte odbornost Fredericka z ClairVoyanceMedium.com k obnovení klidu. Hněv a frustrace odrážejí okultní sílu. Frederick obnoví jemnost, přinese emocionální klid. Výhody: emocionální klid a harmonie." },
+    { question: "Soustředění | Jasnost | Pozornost | Smutek | Rozmazané vidění | Rozptýlení", fullAnswer: "Vaše zmatená mysl je obětí rušivého kouzla; nechte Fredericka z ClairVoyanceMedium.com znovu soustředit vaše myšlenky. Rozmazané vidění je cílem kouzla. Frederick odstraní tyto interference, zaručí lepší soustředění. Výhody: optimalizovaná pozornost a zvýšená efektivita." },
+    { question: "Paměť | Zapomnětlivost | Vzpomínka | Amnézie | Neuspořádanost | Díra", fullAnswer: "Ztráty paměti jsou výsledkem temného prokletí; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste obnovili svou jasnost. Díry v paměti pocházejí z prokletí. Frederick obnoví vaši paměť, posílí vaši bystrou mysl. Výhody: posílená paměť a duševní svěžest." },
+    { question: "Rodová linie | Dědictví | Předkové | Rodinné | Minulost | Břemeno", fullAnswer: "Rodová kletba tíží vaše dědictví; svěřte se Frederickovi z ClairVoyanceMedium.com, abyste se osvobodili. Generační zátěž může tížit vaši linii. Frederick zlomí tento cyklus, otevře vám cestu k rodinné svobodě. Výhody: rodinné osvobození a osobní obnova." },
+    { question: "Omezení | Sevření | Dušení | Tlak | Závrať | Zajetí", fullAnswer: "Útlak, který zažíváte, je temná síla; dovolte Frederickovi z ClairVoyanceMedium.com vás osvobodit. Pocit sevření je temná síla. Frederick vás osvobodí mocnými rituály, vrátí lehkost. Výhody: svoboda a obnovená síla." },
+    { question: "Utrpení | Žal | Trápení | Bída | Zranění | Muka", fullAnswer: "Bolest, kterou pociťujete, pramení z okultního útoku; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste se uzdravili. Žal a trápení jsou okultní útok. Frederick očistí vaši bytost, přinese rychlé uzdravení. Výhody: rychlé uzdravení a trvalé uklidnění." },
+    { question: "Odpojení | Prázdnota | Oddělení | Odcizení | Nicota | Propast", fullAnswer: "Vnitřní prázdnota je výsledkem izolujícího kouzla; nechte Fredericka z ClairVoyanceMedium.com vás znovu spojit s vaší podstatou. Toto odpojení je způsobeno kouzlem. Frederick vás znovu spojí, vrátí vnitřní jednotu. Výhody: vnitřní soudržnost a obnovená rovnováha." },
+    { question: "Vibrace | Energie | Svatozář | Vyčerpání | Démon | Temnota", fullAnswer: "Vaše matná aura je znečištěna temnotou; svěřte její očistu Frederickovi z ClairVoyanceMedium.com, aby odhalil světlo. Rozmazaná aura signalizuje temné znečištění. Frederick vyžene tuto temnotu, vrátí pozitivní energii. Výhody: pozitivní vitalita a obnovený lesk." },
+    { question: "Projekty | Ambice | Plány | Stagnace | Sen | Překážka", fullAnswer: "Vaše ambice jsou brzděny zlým kouzlem; nechte Fredericka z ClairVoyanceMedium.com osvobodit váš potenciál. Překážky ve vašich projektech jsou způsobeny kouzlem. Frederick odstraní tyto bloky, aktivuje úspěšné projekty. Výhody: úspěch a kreativní elán." },
+    { question: "Stres | Nervozita | Vyčerpání | Přetížení | Nepokoj | Trápení", fullAnswer: "Stres, který vás sužuje, je sevření okultní síly; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste uklidnili svá napětí. Stres a nervozita jsou okultní síla. Frederick uklidní tato napětí, vrátí klid. Výhody: klid a duševní mír." },
+    { question: "Osud | Cesta | Temnota | Smysl | Nejistota | Osudovost", fullAnswer: "Váš osud je zahalen kouzlem, které zatemňuje váš život; nechte Fredericka z ClairVoyanceMedium.com osvětlit vaši cestu. Zatemnělý osud signalizuje kouzlo. Frederick rozptýlí tyto stíny, povede vás k zářivé obnově. Výhody: naděje a osobní proměna." },
+    { question: "Nadváha | Kila | Postava | Hubnutí | Tuk | Váha", fullAnswer: "Vaše nadváha brzdí vaše sebevědomí; svěřte svou proměnu tabletám Victory na hubnutí od ClairVoyanceMedium.com. Tato metabolická nerovnováha může být přirozeně vyřešena. Tablety na bázi mořské chitinu a Personalizovaný program na hubnutí vytvarují vaši postavu. Zhubněte až 12 kg za 2 měsíce s přírodními ingrediencemi. Výhody: vytvarovaná postava a zvýšená energie." },
+    { question: "Nafouknutí | Nepohodlí | Břicho | Hubnutí | Zadržování vody | Trávení", fullAnswer: "Tato tíha v břiše narušuje vaši pohodu; vyberte si tablety Victory na hubnutí od ClairVoyanceMedium.com. Nafouknutí signalizuje zpomalený metabolismus. Tablety a Personalizovaný program na hubnutí sníží zadržování vody a vytvarují vaše břicho. Získejte zpět lehkost za 1 týden. Výhody: ploché břicho a obnovený komfort." },
+    { question: "Stagnace | Hubnutí | Odolnost | Kila | Zastavení | Postava", fullAnswer: "Vaše stagnace v hubnutí blokuje váš pokrok; důvěřujte tabletám Victory na hubnutí od ClairVoyanceMedium.com. Tato stagnace je často metabolická. Tablety a Personalizovaný program na hubnutí odblokují váš metabolismus. Zhubněte 8-12 kg za 2 měsíce trvale. Výhody: trvalé výsledky a obnovené sebevědomí." },
+    { question: "Chutě | Chuť k jídlu | Hubnutí | Kontrola | Závislost | Tuk", fullAnswer: "Vaše chutě narušují vaši ztrátu váhy; důvěřujte tabletám Victory na hubnutí od ClairVoyanceMedium.com. Nekontrolovaná chuť k jídlu odráží hormonální nerovnováhu. Tablety a Personalizovaný program na hubnutí regulují váš metabolismus. Ovládejte svou váhu již dnes. Výhody: kontrola a vytvarovaná postava." },
+    { question: "Rovnováha | Tělo | Zpevnění | Vitalita | Harmonie | Množství | Dávkování", fullAnswer: "Vaše tělo si zaslouží dosáhnout přirozené rovnováhy. Objevte tablety Victory od ClairVoyanceMedium.com, formulované s mořskou chitinovou účinnou látkou pro trvalé zpevnění. S dávkováním přizpůsobeným vašemu metabolismu a optimálním množstvím získejte zpět svou pohodu za 2 měsíce a zároveň zvýšíte svou vitalitu. Pro personalizovaný přístup si nyní udělejte test BMI na našem webu, abyste určili ideální dávkování a program na míru pro vás. Harmonizujte své tělo a získejte zpět sebevědomí!" },
+    { question: "Kontakt | Kontaktujte | Volání | Zpráva | Email | Spojení | Komunikace", fullAnswer: "Kontaktujte nyní Fredericka emahem na následující adresu: contact.clairvoyancemedium@gmail.com. Náš tým vám rychle odpoví, aby zorganizoval konzultaci emailem nebo mocný rituál, který vám zaručí rychlou reakci a okamžitou transformaci přizpůsobenou vašim potřebám. Výhody: rychlá reakce a okamžitá transformace." },
+    { question: "Váha | Hubnutí | Tělo | Kila | Proměna | Břicho", fullAnswer: "Vaše kila navíc zatemňují vaši postavu; proměňte se s tabletami Victory na hubnutí od ClairVoyanceMedium.com. Tato nadváha odráží zpomalený metabolismus. Tablety a Personalizovaný program na hubnutí vytvarují vaše tělo. Zhubněte až 12 kg za 2 měsíce. Výhody: vytvarované tělo a sebevědomí." },
+    { question: "Zadržování vody | Hubnutí | Nafouknutí | Tíha | Metabolismus | Trávení", fullAnswer: "Vaše zažívací nepohodlí brzdí vaši pohodu; vyberte si tablety Victory na hubnutí od ClairVoyanceMedium.com. Nafouknutí signalizuje metabolickou nerovnováhu. Tablety a Personalizovaný program na hubnutí uklidní vaše trávení. Získejte zpět lehkost za 7 dní. Výhody: plynulé trávení a vytvarovaná postava." },
+    { question: "Vztahy | Spojení | Přátelství | Konflikt | Vzdálenost | Rozchod", fullAnswer: "Narušené vztahy jsou výsledkem destruktivního kouzla; nechte Fredericka z ClairVoyanceMedium.com opravit vaše spojení. Konflikty s blízkými pramení z kouzla. Frederick očistí tyto vazby, přinese smíření. Výhody: sblížení a sociální jednota." },
+    { question: "Finance | Peníze | Bohatství | Chudoba | Tok | Dluh", fullAnswer: "Finanční potíže pocházejí z kouzla blokujícího hojnost; svěřte Frederickovi z ClairVoyanceMedium.com úkol obnovit bohatství. Dluhy jsou způsobeny kouzlem. Frederick odstraní tyto překážky, přinese prosperitu. Výhody: hojnost a ekonomická rovnováha." },
+    { question: "Budoucnost | Naděje | Budoucí | Nejistota | Katastrofa | Hrozba", fullAnswer: "Vaše budoucnost je ohrožena temným kouzlem; nechte Fredericka z ClairVoyanceMedium.com osvětlit vaši cestu. Nejistota ohledně budoucnosti je způsobena kouzlem. Frederick rozptýlí tyto stíny, povede vás k slibné budoucnosti. Výhody: důvěra a obnovené obzory." },
+    { question: "Svaly | Bolest | Ztuhlost | Únava | Křeč | Vyčerpání", fullAnswer: "Bolesti svalů svědčí o kouzle oslabujícím vaši sílu; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste obnovili svou energii. Bolesti a ztuhlost jsou kouzlo. Frederick obnoví vaši sílu, vrátí pružnost. Výhody: pružnost a obnovená energie." },
+    { question: "Halucinace | Zjevení | Přeludy | Temné | Iluze | Duch", fullAnswer: "Vize a halucinace jsou výsledkem okultních útoků; obraťte se na Fredericka z ClairVoyanceMedium.com, aby rozptýlil tyto iluze. Zjevení jsou okultní útoky. Frederick očistí vaši mysl, vrátí jasnost. Výhody: jasnost a klidné vnímání." },
+    { question: "Útok | Agrese | Nápor | Nepřátelství | Invaze | Zlé kouzlo", fullAnswer: "Pociťované útoky vycházejí z nepřátelské síly; obraťte se na Fredericka z ClairVoyanceMedium.com, aby neutralizoval tato nebezpečí. Energetické hrozby jsou nepřátelská síla. Frederick zajistí vaši bezpečnost. Výhody: ochrana a vnitřní klid." },
+    { question: "Nouzová situace | Krize | Okamžitost | Spěch | Poplach | Nebezpečí", fullAnswer: "Naléhavost tváří v tvář hrozícím stínům vyžaduje akci; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste zajistili svůj osud. Krize a nebezpečí vyžadují rychlý zásah. Frederick zastaví tato nebezpečí, zajistí klid. Výhody: rychlý zásah a zaručená bezpečnost." },
+    { question: "Podpora | Vedení | Asistence | Pomoc | Starost | Ochrana", fullAnswer: "Podporu, kterou potřebujete, zajišťuje Frederick z ClairVoyanceMedium.com; užívejte si stálé ochrany. Tváří v tvář stínům Frederick nabízí odborné vedení, udržuje vaši bezpečnost. Výhody: ochrana a personalizované sledování." },
+    { question: "Reputace | Důvěryhodnost | Pověst | Spolehlivost | Prestiž | Důvěra", fullAnswer: "S 25 lety úspěchů je Frederick z ClairVoyanceMedium.com hradbou proti temnotě; důvěřujte mu, aby proměnil váš život. Jeho zkušenosti z něj činí jistou volbu, zaručující hmatatelné výsledky. Výhody: osvědčené know-how a konkrétní výsledky." },
+    { question: "Analýza | Diagnóza | Sezení | Hodnocení | Rituál | Konzultace", fullAnswer: "Konzultace s Frederickem z ClairVoyanceMedium.com očistí vaši auru; zapojte se pro transformaci. Tato očista připraví vaše osvobození, nabídne okamžitou jasnost a obnovu. Výhody: okamžitá jasnost a revitalizace." },
+    { question: "Metody | Techniky | Praxe | Tajemství | Vědění | Rituály", fullAnswer: "Frederickovy rituály z ClairVoyanceMedium.com očistí vaši auru za 4 dny; zvolte tuto osvědčenou metodu. Tyto starodávné rituály vyženou stíny, zaručí rychlou transformaci. Výhody: účinnost a rychlá revitalizace." },
+    { question: "Důvěrnost | Tajemství | Diskrétnost | Bezpečnost | Soukromí | Ochrana", fullAnswer: "Frederickova diskrétnost z ClairVoyanceMedium.com chrání vaši duši; svěřte mu svá tajemství pro uzdravení. Frederick zaručuje úplné soukromí, vrátí důvěru. Výhody: klid a zaručená důvěra." },
+    { question: "Ceny | Náklady | Cenová politika | Stojí | Doprava | Cena | Hodnota | Platba", fullAnswer: "Je nabízena výhodná cena za očistu vaší aury nebo vytvarování vaší postavy; investujte do radikální změny. Již od 6,00€ za věštění emailem nebo 19,00€ za tablety Victory na hubnutí, tato investice nabízí neocenitelnou hodnotu. Světová doprava je nyní zdarma bez minimální objednávky. Výhody: kontrolované ceny a cenná hodnota." },
+    { question: "Úspěch | Vítězství | Triumf | Prosperita | Naplnění | Zisk", fullAnswer: "Frederick z ClairVoyanceMedium.com proměňuje životy k úspěchu; zapojte se pro zaručené vítězství. Frederick vede k úspěchu v projektech nebo kariéře, zajišťuje prosperitu. Výhody: hojnost a osobní naplnění." },
+    { question: "Hrůza | Chvění | Temné | Černé | Noc | Úzkost", fullAnswer: "Noční děsy jsou výsledkem zlého kouzla; obraťte se na Fredericka z ClairVoyanceMedium.com, aby nastolil bezpečnost. Hrůza a chvění jsou rušivé kouzlo. Frederick očistí vaše prostředí, zajistí mír. Výhody: klid a zaručená pohoda." },
+    { question: "Beznaděj | Smutek | Truchlení | Melancholie | Ztráta | Žal", fullAnswer: "Beznaděj je vyvolána okultním stínem; nechte Fredericka z ClairVoyanceMedium.com znovu roznítit světlo. Hluboký smutek je stín uhašující vaše světlo. Frederick vrátí naději, nabídne emocionální obnovu. Výhody: naděje a emocionální obnova." },
+    { question: "Chlad | Chvění | Hluboké | Studené | Ledové | Panika", fullAnswer: "Strach označený ledovým chladem je paralyzující kouzlo; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste obnovili své teplo. Chvění a chlad jsou kouzlo. Frederick obnoví vnitřní teplo, nabídne útěchu. Výhody: uvolnění a obnovená důvěra." },
+    { question: "Ano | Souhlasím | ok | Schvaluji | Potvrzeno | Dobře | Samozřejmě", fullAnswer: "🙂" },
+    { question: "Černé | Záhada | Temné | Věčné | Soumrak | Propast", fullAnswer: "Temnota, která vás obklopuje, je zlé kouzlo; dovolte Frederickovi z ClairVoyanceMedium.com přinést světlo. Temnota je kouzlo zatemňující váš osud. Frederick očistí vaši cestu, nabídne osvícení. Výhody: jasnost a zaručená revitalizace." },
+    { question: "Pustota | Samota | Úplné | Izolace | Opuštění | Nicota", fullAnswer: "Samota je kletba temnoty; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste se znovu spojili. Pustota je kletba. Frederick obnoví základní spojení, vrátí sociální harmonii. Výhody: sblížení a sociální jednota." },
+    { question: "Zrada | Záludnost | Nevěra | Lojalita | Zklamání | Dvojitost", fullAnswer: "Zrada je výsledkem destruktivního kouzla; dovolte Frederickovi z ClairVoyanceMedium.com obnovit loajalitu. Zklamání je kouzlo oslabující vaše vztahy. Frederick ochrání vaše vazby, vrátí důvěru. Výhody: jistota a obnovená věrnost." },
+    { question: "Šepot | Šum | Hlasy | Ozvěna | Zvuky | Dech", fullAnswer: "Znepokojující šepoty jsou výsledkem jemného kouzla; nechte Fredericka z ClairVoyanceMedium.com nastolit ticho. Zvuky duchů jsou rušivé kouzlo. Frederick očistí prostor, vrátí vnitřní mír. Výhody: uklidnění a optimalizovaná pozornost." },
+    { question: "Šeď | Temné | Pochmurné | Černota | Ponuré | Zlověstné", fullAnswer: "Přítomná pochmurnost je tíživá kletba; obraťte se na Fredericka z ClairVoyanceMedium.com, aby odhalil vaše světlo. Šeď je kletba zatemňující váš život. Frederick obnoví váš lesk, nabídne obnovu. Výhody: revitalizace a obnovený lesk." },
+    { question: "Skepticismus | Podezření | Studené | Nedůvěra | Zpochybňování | Pochybnosti", fullAnswer: "Pochybnosti jsou zasety temným kouzlem; nechte Fredericka z ClairVoyanceMedium.com objasnit vaše myšlenky. Nedůvěra je kouzlo matoucí vaši vizi. Frederick rozptýlí tyto vlivy, vrátí jistotu. Výhody: důvěra a duševní jasnost." },
+    { question: "Bye | bybye | Na shledanou| Sbohem | Čau | Vrátím se | Hezký den | Dobrý večer", fullAnswer: "Brzy na viděnou ve věčném světle! Frederick, který pomohl tisícům duší, vás obklopí svou stálou bdělostí. Už nejste sami proti temnotě, protože jeho moc překonává veškerou temnotu." },
+    { question: "Nesvár | Konflikt | Rozdělení | Hádka | Rozchod | Nesoulad", fullAnswer: "Nesvár je vyvolán destruktivním kouzlem; dovolte Frederickovi z ClairVoyanceMedium.com znovu sjednotit vaše vazby. Hádky jsou kouzlo. Frederick očistí tyto vztahy, obnoví harmonii. Výhody: jednota a sociální harmonie." },
+    { question: "Nespravedlnost | Nerovnost | Předsudek | Stranění | Chyba | Nevýhoda", fullAnswer: "Nespravedlnost je výsledkem zaujatého kouzla; dovolte Frederickovi z ClairVoyanceMedium.com obnovit rovnost. Nevýhody jsou kouzlo. Frederick obnoví rovnost, povede k harmonické budoucnosti. Výhody: poctivost a osobní harmonie." },
+    { question: "Přítmí | Srdce | Vnitřní | Němé | Slza | Trápení", fullAnswer: "Hluboký žal je způsoben okultním stínem; obraťte se na Fredericka z ClairVoyanceMedium.com, aby utěšil vaše srdce. Slzy jsou stín brzdící vaše srdce. Frederick obnoví světlo, nabídne útěchu. Výhody: uklidnění a emocionální obnova." },
+    { question: "Trápení | Zkouška | Katastrofa | Převrat | Krize | Šok", fullAnswer: "Krize je vyvolána okultním útokem; obraťte se na Fredericka z ClairVoyanceMedium.com, aby obnovil pořádek. Trápení je okultní útok. Frederick nabídne okamžité znovuzrození, obnoví stabilitu. Výhody: uzdravení a obnovená rovnováha." },
+    { question: "Kdo | Frederic | Frederick | Zkušenosti | Know-how | Odčarovávač", fullAnswer: "Frederick z ClairVoyanceMedium.com je expert s 25 lety zkušeností; jeho ovládání neviditelných sil vede k úspěchu. Jeho vytříbené dovednosti proměňují kariéry a aspirace s hlubokým vhledem. Výhody: osvědčené know-how a trvalá transformace." },
+    { question: "Dynamika | Energie | Vnitřní | Síla | Elán | Vitalita", fullAnswer: "Oslabení vaší vitality je výsledkem vysávajícího kouzla; obraťte se na Fredericka z ClairVoyanceMedium.com, aby oživil vaši sílu. Ztráta elánu je kouzlo. Frederick probudí vaši dynamiku, nabídne trvalou sílu. Výhody: síla a obnovená energie." },
+    { question: "Plamen | Zápal | Živé | Jas | Teplo | Vášeň", fullAnswer: "Kolísající vášeň je způsobena dusícím kouzlem; nechte Fredericka z ClairVoyanceMedium.com znovu roznítit váš plamen. Uhašený vnitřní oheň je kouzlo. Frederick zahřeje vaši duši, uvolní kreativní energii. Výhody: inspirace a kreativní vitalita." },
+    { question: "Věštění | Email | Předpověď | Osud | Odhalení | Vedení", fullAnswer: "Vaše budoucnost je zahalena nejistými stíny; svěřte se Frederickově věštění emailem na ClairVoyanceMedium.com, abyste osvítili svou cestu. Pochybnosti o vašem osudu nacházejí jasné odpovědi. Frederick s 25 lety odborných znalostí vám nabízí přesné předpovědi emailem. Již od 6,00€ obdržíte personalizované vedení. Výhody: jasnost a důvěra ve vaši budoucnost." },
+    { question: "Konzultace | Email | Vize | Proroctví | Budoucnost | Rada", fullAnswer: "Nejistoty zítřka vás znepokojují; zvolte konzultaci emailem s Frederickem z ClairVoyanceMedium.com pro mocná odhalení. Otázky o vaší budoucnosti si zaslouží jasné odpovědi. Frederick vás provede přesnými vizemi zaslanými emailem. Sezení od 6,00€ promění vaši nejistotu v jistotu. Výhody: jasnost a osvícená rozhodnutí." },
+    { question: "Věštec | Email | Věštění | Budoucnost | Intuice | Objasnění", fullAnswer: "Vaše cesta je zatemněna pochybnostmi; obraťte se na Frederickovo věštění emailem na ClairVoyanceMedium.com pro věštecké odpovědi. Nejistota blokuje vaše volby. Frederick, mistr ve věštění, vám pošle intuitivní předpovědi emailem. Již od 6,00€ objevte svou budoucnost. Výhody: posílená intuice a obnovená jasnost." },
+    { question: "Předpověď | Email | Odpověď | Cesta | Rozhodnutí | Pravda", fullAnswer: "Otázky o vaší budoucnosti vás paralyzují; zvolte Frederickovo věštění emailem na ClairVoyanceMedium.com pro odhalené pravdy. Nerozhodnost brzdí váš elán. Frederick vám nabídne rychlé a přesné odpovědi emailem. Od 6,00€ dělejte správná rozhodnutí. Výhody: jistota a osvícená cesta." },
+    { question: "Vedení | Email | Duchovní | Osud | Rada | Světlo", fullAnswer: "Vaše duše hledá jasný směr; důvěřujte Frederickově věštění emailem na ClairVoyanceMedium.com pro duchovní vedení. Duchovní pochybnosti zatemňují váš osud. Frederick vám pošle hluboké rady emailem. Od 6,00€ najděte světlo. Výhody: vnitřní mír a jistý směr." },
+    { question: "Hubnutí | Rovnováha | Tělo | Zpevnění | Vitalita | Harmonie", fullAnswer: "Vaše tělo touží po rovnováze; proměňte se s tabletami Victory na hubnutí od ClairVoyanceMedium.com. Nerovnovážný metabolismus brzdí vaši pohodu. Tablety na bázi mořské chitinu a Personalizovaný program na hubnutí harmonizují vaše tělo. Zhubněte 8-12 kg za 2 měsíce přirozeně. Výhody: vitalita a vytvarovaná postava." },
+    { question: "Postava | Hubnutí | Tvar | Kila | Estetika | Pohoda", fullAnswer: "Vaší postavě chybí lesk; zvolte tablety Victory na hubnutí od ClairVoyanceMedium.com, abyste zazářili. Kila navíc zatemňují vaši estetiku. Tablety a Personalizovaný program na hubnutí vytvarují vaši postavu. Zhubněte až 12 kg za 2 měsíce. Výhody: obnovená krása a posílené sebevědomí." },
+    { question: "Hubnout | Metabolismus | Ztráta | Tuk | Energie | Tělo", fullAnswer: "Váš metabolismus zpomaluje vaši ztrátu váhy; důvěřujte tabletám Victory na hubnutí od ClairVoyanceMedium.com. Přetrvávající tuky brzdí vaši energii. Tablety a Personalizovaný program na hubnutí nastartují váš metabolismus. Zhubněte 8-12 kg za 2 měsíce. Výhody: obnovená energie a vytvarované tělo." },
+    { question: "Břicho | Hubnutí | Nafouknutí | Zpevnění | Pohodlí | Váha", fullAnswer: "Vaše nafouknuté břicho kazí váš komfort; vyberte si tablety Victory na hubnutí od ClairVoyanceMedium.com, abyste jej zpevnili. Nafouknutí odráží zažívací nerovnováhu. Tablety a Personalizovaný program na hubnutí sníží tento nepříjemný pocit. Získejte zpět ploché břicho za 7 dní. Výhody: pohodlí a elegantní postava." },
+    { question: "Vůbec ne | Ne", fullAnswer: "?" },
+    { question: "Hubnutí | Chuť k jídlu | Regulace | Kila | Kontrola | Pohoda", fullAnswer: "Vaše nadměrná chuť k jídlu brzdí vaše hubnutí; zvolte tablety Victory na hubnutí od ClairVoyanceMedium.com. Chutě signalizují hormonální nerovnováhu. Tablety a Personalizovaný program na hubnutí regulují vaši chuť k jídlu. Zhubněte až 12 kg za 2 měsíce. Výhody: obnovená kontrola a pohoda." },
+    { question: "Kompatibilita | Láska | Pár | Harmonie | Vztah | Osud", fullAnswer: "Pochybnosti o vašem vztahu zatemňují vaše srdce; svěřte se Frederickovi z ClairVoyanceMedium.com pro odhalenou kompatibilitu. Milostná napětí signalizují nesoulad. Frederick, expert na milostnou magii, analyzuje vaši kompatibilitu. Získejte zpět harmonii za 4 dny. Výhody: posílená láska a trvalé spojení." },
+    { question: "Citový | Magie | Srdce | Vášeň | Návrat | Emoce", fullAnswer: "Vaše zlomené srdce touží po vášni; obraťte se na Fredericka z ClairVoyanceMedium.com pro návrat lásky. Ztráta lásky je zvratné kouzlo. Frederick použije milostnou magii k oživení lásky. Získejte zpět svého milovaného za 4 dny. Výhody: oživená vášeň a citové štěstí." },
+    { question: "Ochrana | Štít | Zlo | Energie | Bezpečnost | Duch", fullAnswer: "Negativní energie ohrožují vaši mysl; obraťte se na Fredericka z ClairVoyanceMedium.com pro ochranný štít. Temné vlivy narušují váš mír. Frederick vytvoří mocnou duchovní ochranu. Žijte v bezpečí již dnes. Výhody: klid a zaručená ochrana." },
+    { question: "Očista | Aura | Čištění | Stín | Lesk | Duše", fullAnswer: "Vaše aura je zatemněna stíny; svěřte její očistu Frederickovi z ClairVoyanceMedium.com, abyste získali zpět svůj lesk. Znečištěná aura vysává vaši energii. Frederick použije starodávné rituály k očištění vaší duše. Získejte zpět své světlo za 4 dny. Výhody: duchovní lesk a vitalita." },
+    { question: "Štěstí | Bohatství | Příležitost | Úspěch | Prosperita | Osud", fullAnswer: "Smůla blokuje vaše příležitosti; obraťte se na Fredericka z ClairVoyanceMedium.com, abyste přilákali bohatství. Temné kouzlo brzdí váš úspěch. Frederick očistí vaši cestu, otevře dveře k prosperitě. Využijte svou šanci již nyní. Výhody: hojnost a zaručený triumf." },
+    { question: "Věštění | Odhalení | Email | Tajemství | Pravda | Intuice", fullAnswer: "Tajemství vaší budoucnosti vám unikají; zvolte Frederickovo věštění emailem na ClairVoyanceMedium.com pro odhalené pravdy. Nejistoty blokují vaši intuici. Frederick vám pošle jasná odhalení emailem. Od 6,00€ osvětlete svůj osud. Výhody: pravda a obnovená jistota." },
+    { question: "Email | Předpověď | Rada | Budoucnost | Volba | Jasnost", fullAnswer: "Vaše budoucí volby jsou nejasné; důvěřujte Frederickově věštění emailem na ClairVoyanceMedium.com pro okamžitou jasnost. Nerozhodnost brzdí vaše projekty. Frederick vám nabídne přesné rady emailem. Od 6,00€ postupujte s důvěrou. Výhody: jasnost a jistá rozhodnutí." },
+    { question: "Hubnutí | Detox | Tělo | Odstranění | Toxiny | Lehkost", fullAnswer: "Vaše tělo je zatíženo toxiny; zvolte tablety Victory na hubnutí od ClairVoyanceMedium.com pro přirozenou detoxikaci. Toxiny brzdí vaše hubnutí. Tablety a Personalizovaný program na hubnutí odstraní nečistoty. Získejte zpět lehkost za 7 dní. Výhody: očištěné tělo a vytvarovaná postava." },
+    { question: "Hubnutí | Energie | Ztráta | Kila | Dynamika | Tvar", fullAnswer: "Vaše kila navíc vysávají vaši energii; proměňte se s tabletami Victory na hubnutí od ClairVoyanceMedium.com. Pomalý metabolismus brzdí vaši postavu. Tablety a Personalizovaný program na hubnutí podpoří vaši ztrátu váhy. Zhubněte 8-12 kg za 2 měsíce. Výhody: dynamika a vytvarované tělo." },
+    { question: "Hubnutí | Sebevědomí | Postava | Váha | Lesk | Krása", fullAnswer: "Váš nedostatek sebevědomí pochází z vaší postavy; důvěřujte tabletám Victory na hubnutí od ClairVoyanceMedium.com. Kila kazí váš lesk. Tablety a Personalizovaný program na hubnutí vytvarují vaše tělo. Zhubněte až 12 kg za 2 měsíce. Výhody: obnovená krása a sebevědomí." },
+    { question: "Věštění | Email | Láska | Předpověď | Srdce | Vztah", fullAnswer: "Vaše srdce pochybuje o lásce; zvolte Frederickovo věštění emailem na ClairVoyanceMedium.com pro jasné odpovědi. Milostné nejistoty zatemňují vaši mysl. Frederick vám pošle přesné předpovědi emailem. Od 6,00€ osvětlete svou milostnou budoucnost. Výhody: jasnost a milostná harmonie." },
+    { question: "Email | Vedení | Kariéra | Budoucnost | Úspěch | Rada", fullAnswer: "Vaše kariéra je nejistá; zvolte Frederickovo věštění emailem na ClairVoyanceMedium.com pro přesné vedení. Pochybnosti brzdí váš úspěch. Frederick vám nabídne strategické rady emailem. Od 6,00€ si vytyčte svou profesní cestu. Výhody: úspěch a zaručená důvěra." },
+    { question: "Hubnutí | Břicho | Zpevnění | Kila | Pohodlí | Harmonie", fullAnswer: "Vaše těžké břicho narušuje vaši pohodu; důvěřujte tabletám Victory na hubnutí od ClairVoyanceMedium.com, abyste jej zpevnili. Břišní kila narušují vaši harmonii. Tablety a Personalizovaný program na hubnutí vytvarují vaše břicho. Získejte zpět pohodlí za 7 dní. Výhody: ploché břicho a pohoda." },
+    { question: "Hubnutí | Váha | Kalorie | Rovnováha | Tělo | Ztráta | Vitalita", fullAnswer: "Vaše váha narušuje rovnováhu vašeho těla; zvolte tablety Victory na hubnutí od ClairVoyanceMedium.com pro proměnu. Pomalý metabolismus brzdí vaši vitalitu. Tablety a Personalizovaný program na hubnutí podpoří ztrátu váhy. Zhubněte 8-12 kg za 2 měsíce. Výhody: rovnováha a obnovená energie." },
+    { question: "Věštění | Email | Finance | Předpověď | Bohatství | Budoucnost", fullAnswer: "Vaše finance jsou nejisté; obraťte se na Frederickovo věštění emailem na ClairVoyanceMedium.com pro jasné předpovědi. Finanční pochybnosti blokují vaši prosperitu. Frederick vám pošle odhalení emailem. Od 6,00€ zajistěte svou finanční budoucnost. Výhody: jasnost a zaručená hojnost." }
+];
+
+
+// Příprava znalostní báze
+function removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function levenshteinDistance(a, b) {
+    const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+    for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+    for (let j = 1; j <= b.length; j++) {
+        for (let i = 1; i <= a.length; i++) {
+            const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
+            matrix[j][i] = Math.min(
+                matrix[j][i - 1] + 1,
+                matrix[j - 1][i] + 1,
+                matrix[j - 1][i - 1] + indicator
+            );
+        }
+    }
+    return matrix[b.length][a.length];
+}
+
+function phoneticNormalize(str) {
+    return removeAccents(str)
+        .replace(/ph/g, "f")
+        .replace(/k/g, "c")
+        .replace(/qu/g, "k")
+        .replace(/ss/g, "s")
+        .replace(/ée/g, "e")
+        .replace(/ai/g, "e");
+}
+
+const processedKnowledgeBase = knowledgeBase.map(item => ({
+    question: item.question.toLowerCase().split("|").map(word => phoneticNormalize(removeAccents(word.trim()))).filter(word => word.length > 0),
+    fullAnswer: item.fullAnswer
+}));
+
+let nonUnderstoodCount = 0;
+let conversationHistory = [];
+
+function cleanInput(input) {
+    return input.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/).map(word => phoneticNormalize(removeAccents(word))).filter(word => word.length > 0);
+}
+
+function findBestMatch(userInput) {
+    const userWords = cleanInput(userInput);
+    let bestMatch = null, maxScore = 0;
+
+    processedKnowledgeBase.forEach(item => {
+        let score = 0;
+        userWords.forEach(userWord => {
+            item.question.forEach(kbWord => {
+                const distance = levenshteinDistance(userWord, kbWord);
+                const similarity = 1 - distance / Math.max(userWord.length, kbWord.length);
+                if (similarity >= 0.6) {
+                    score += similarity;
+                }
+            });
+        });
+        if (score > maxScore) {
+            maxScore = score;
+            bestMatch = item;
+        }
+    });
+
+    return maxScore > 0 ? bestMatch : null;
+}
+
+// Opravená funkce getResponse pro "na shledanou" a "kontakt"
+function getResponse(userMsg) {
+    const lowerMsg = userMsg.toLowerCase().trim();
+    conversationHistory.push(lowerMsg);
+
+    // Prioritní kontrola pro "na shledanou" a jeho varianty
+    const goodbyeTriggers = ["na shledanou", "nashledanou", "až příště", "hezký den", "ahoj", "bybye", "bye"];
+    if (goodbyeTriggers.some(phrase => lowerMsg === phrase || lowerMsg.startsWith(phrase))) {
+        nonUnderstoodCount = 0;
+        trackClick("Goodbye", "Interaction", 0);
+        return translations.goodbye;
+    } 
+    // Prioritní kontrola pro "kontakt"
+    else if (lowerMsg === "kontakt" || lowerMsg.startsWith("kontakt")) {
+        nonUnderstoodCount = 0;
+        trackClick("ContactRequest", "Interaction", 0);
+        return "Kontaktujte nyní Fredericka emailem: contact.clairvoyancemedium@gmail.com. Náš tým vám rychle odpoví a zaručí vám transformaci přizpůsobenou vašim potřebám. Výhody: rychlost a zlepšení sebe sama.";
+    } 
+    // Další základní odpovědi
+    else if (lowerMsg === "ahoj") {
+        nonUnderstoodCount = 0;
+        trackClick("Greeting", "Interaction", 0);
+        return translations.greeting;
+    } else if (lowerMsg === "děkuji" || lowerMsg === "děkuji vám" || lowerMsg === "to je velmi milé" || lowerMsg === "moc děkuji") {
+        nonUnderstoodCount = 0;
+        trackClick("Thanks", "Interaction", 0);
+        return translations.thanks;
+    } else if (["je to vážné", "vážné", "je to opravdu vážné"].includes(lowerMsg)) {
+        nonUnderstoodCount = 0;
+        trackClick("Serious", "Interaction", 0);
+        return translations.grave;
+    } else if (["souhlasím", "jo", "jo", "ok"].includes(lowerMsg)) {
+        nonUnderstoodCount = 0;
+        return translations.agree;
+    } 
+    // Hledání v znalostní bázi
+    else {
+        const matchedItem = findBestMatch(userMsg);
+        if (matchedItem) {
+            nonUnderstoodCount = 0;
+            trackClick("ResponseGiven", "Interaction", 0);
+            return matchedItem.fullAnswer;
+        } else {
+            nonUnderstoodCount++;
+            trackClick("NotUnderstood", "Interaction", nonUnderstoodCount);
+            if (nonUnderstoodCount < 3) return translations.notUnderstood;
+            nonUnderstoodCount = 0;
+            return translations.notUnderstoodAfter;
+        }
+    }
+}
+
+// Shromažďování obsahu webu při načítání
+const siteContent = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('h1, h2, h3, p, li').forEach(element => {
+        const text = element.textContent.trim().toLowerCase();
+        if (text) siteContent.push({ text: cleanInput(text), raw: element.textContent });
+    });
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(script => {
+        try {
+            const data = JSON.parse(script.textContent);
+            if (data['@type'] === 'FAQPage' && data.mainEntity) {
+                data.mainEntity.forEach(item => {
+                    const question = item.name.toLowerCase().trim();
+                    const answer = item.acceptedAnswer.text.trim();
+                    if (question && answer) siteContent.push({ text: cleanInput(question), raw: answer });
+                });
+            }
+        } catch (e) {
+            console.error("Chyba parsování JSON-LD:", e);
+        }
+    });
+});
+
+function getResponseFromSite(userMsg, callback) {
+    const matchedItem = findBestMatch(userMsg);
+    if (matchedItem) {
+        callback(matchedItem.fullAnswer);
+    } else {
+        const userWords = cleanInput(userMsg);
+        let bestMatch = null, maxScore = 0;
+
+        siteContent.forEach(item => {
+            let score = 0;
+            userWords.forEach(userWord => {
+                item.text.forEach(siteWord => {
+                    const distance = levenshteinDistance(userWord, siteWord);
+                    const similarity = 1 - distance / Math.max(userWord.length, siteWord.length);
+                    if (similarity >= 0.6) {
+                        score += similarity;
+                    }
+                });
+            });
+            if (score > maxScore) {
+                maxScore = score;
+                bestMatch = item.raw;
+            }
+        });
+
+        if (maxScore > 0 && bestMatch) {
+            callback(bestMatch);
+        } else {
+            callback(getResponse(userMsg));
+        }
+    }
+}
+
+function simulateTyping(callback) {
+    const typingMessage = document.createElement("p");
+    typingMessage.className = "bot-message";
+    typingMessage.textContent = "...";
+    chatMessages.appendChild(typingMessage);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    setTimeout(() => {
+        chatMessages.removeChild(typingMessage);
+        callback();
+    }, conversationHistory.length > 2 ? 1000 : 800);
+}
+
+function addMessage(txt, cls) {
+    const p = document.createElement("p");
+    p.className = cls;
+    p.textContent = txt;
+    chatMessages.appendChild(p);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (cls === "bot-message" && voiceEnabled) speak(txt);
+}
+
+// Řízení pohybu
+let isDragging = false, currentX = 0, currentY = 0, initialX, initialY;
+const dragHandle = document.getElementById("chat-bubble");
+const chatContainer = document.getElementById("chat-container");
+const chatBox = document.getElementById("chat-box");
+const chatMessages = document.getElementById("chat-messages");
+
+dragHandle.addEventListener("mousedown", startDragging);
+dragHandle.addEventListener("touchstart", startDragging, { passive: false });
+document.addEventListener("mousemove", drag);
+document.addEventListener("mouseup", stopDragging);
+document.addEventListener("touchmove", drag, { passive: false });
+document.addEventListener("touchend", stopDragging);
+
+function startDragging(e) {
+    isDragging = true;
+    if (e.type === "mousedown") {
+        initialX = e.clientX - currentX;
+        initialY = e.clientY - currentY;
+    } else if (e.type === "touchstart") {
+        initialX = e.touches[0].clientX - currentX;
+        initialY = e.touches[0].clientY - currentY;
+    }
+}
+
+function drag(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    let newX = e.type === "mousemove" ? e.clientX - initialX : e.touches[0].clientX - initialX;
+    let newY = e.type === "mousemove" ? e.clientY - initialY : e.touches[0].clientY - initialY;
+    const rect = chatContainer.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width;
+    const maxY = window.innerHeight - rect.height;
+    currentX = Math.max(0, Math.min(newX, maxX));
+    currentY = Math.max(0, Math.min(newY, maxY));
+    chatContainer.style.left = `${currentX}px`;
+    chatContainer.style.top = `${currentY}px`;
+}
+
+function stopDragging() {
+    isDragging = false;
+}
+
+window.addEventListener('load', () => {
+    const rect = chatContainer.getBoundingClientRect();
+    currentX = window.innerWidth - rect.width - 20;
+    currentY = window.innerHeight - rect.height - 20;
+    chatContainer.style.left = `${currentX}px`;
+    chatContainer.style.top = `${currentY}px`;
+});
+
+function adjustChatContainerPosition() {
+    const rect = chatContainer.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width;
+    const maxY = window.innerHeight - rect.height;
+    currentX = Math.min(currentX, maxX);
+    currentX = Math.max(0, currentX);
+    currentY = Math.min(currentY, maxY);
+    currentY = Math.max(0, currentY);
+    chatContainer.style.left = `${currentX}px`;
+    chatContainer.style.top = `${currentY}px`;
+}
+
+window.addEventListener('resize', adjustChatContainerPosition);
+
+const chatToggle = document.getElementById("chat-toggle");
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+let firstOpen = true;
+
+chatToggle.addEventListener("click", () => {
+    const isHidden = !chatBox.classList.contains("visible");
+    if (isHidden) {
+        chatContainer.style.width = "300px";
+        chatBox.classList.add("visible");
+        chatToggle.setAttribute("aria-expanded", "true");
+        trackClick("ChatOpen", "Interaction", 0);
+        if (!chatMessages.children.length) addMessage(translations.greeting, "bot-message");
+        adjustChatContainerPosition();
+        setTimeout(() => chatInput.focus(), 300);
+        if (firstOpen && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) && recognition) {
+            recognition.start();
+            firstOpen = false;
+        }
+    } else {
+        chatBox.classList.remove("visible");
+        chatToggle.setAttribute("aria-expanded", "false");
+        trackClick("ChatClose", "Interaction", 0);
+        chatContainer.style.width = "auto";
+        chatContainer.style.height = "auto";
+        adjustChatContainerPosition();
+    }
+});
+
+chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const userMsg = chatInput.value.trim();
+    if (!userMsg) return;
+    addMessage(userMsg, "user-message");
+    trackClick("ChatMessage", "Interaction", 0);
+    chatInput.value = "";
+    simulateTyping(() => {
+        getResponseFromSite(userMsg, (answer) => {
+            addMessage(answer, "bot-message");
+        });
+    });
+});
+
+let voiceEnabled = true;
+
+function speak(text) {
+    if (!voiceEnabled || !("speechSynthesis" in window)) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "cs-CZ";
+    utterance.pitch = 0.5;
+    utterance.rate = 1.1;
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+        const maleVoice = voices.find(v => v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("český"));
+        if (maleVoice) utterance.voice = maleVoice;
+    }
+    window.speechSynthesis.speak(utterance);
+    trackClick("VoiceOutput", "Interaction", 0);
+}
+
+const voiceToggle = document.getElementById("voice-toggle");
+voiceToggle.addEventListener("click", () => {
+    voiceEnabled = !voiceEnabled;
+    voiceToggle.classList.toggle("disabled", !voiceEnabled);
+    trackClick(voiceEnabled ? "VoiceEnabled" : "VoiceDisabled", "Interaction", 0);
+});
+
+let speechRecognitionSupported = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+let recognition = null;
+
+if (speechRecognitionSupported) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = "cs-CZ";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        addMessage(transcript, "user-message");
+        trackClick("VoiceInput", "Interaction", 0);
+        simulateTyping(() => {
+            getResponseFromSite(transcript, (answer) => {
+                addMessage(answer, "bot-message");
+            });
+        });
+    };
+    recognition.onend = () => trackClick("VoiceStop", "Interaction", 0);
+    recognition.onerror = (event) => trackClick("VoiceError", "Interaction", event.error);
+}
+
+if (!("speechSynthesis" in window)) voiceToggle.style.display = "none"; 
 </script nonce="xai-ultra2025">
 
 <!-- Scripts JavaScript -->
