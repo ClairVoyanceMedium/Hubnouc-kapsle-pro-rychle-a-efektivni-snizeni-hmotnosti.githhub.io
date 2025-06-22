@@ -1,42 +1,168 @@
-# Indique aux robots que toutes les pages peuvent être explorées, sauf restrictions spécifiées
+# robots.txt v3.5 - 2025-05-28
+# Optimisé pour https://clairvoyancemedium.github.io/Hubnouc-kapsle-pro-rychle-a-efektivni-snizeni-hmotnosti.githhub.io/
+# Objectifs : SEO tchèque, crawl ultra-fréquent, support IA/réseaux sociaux, protection maximale
+
+# --- Obecné direktivy pro všechny legitimní crawly ---
 User-agent: *
-Disallow: /admin/
-Disallow: /tmp/
-Disallow: /private/
+Allow: /
+Allow: /cs/       # Prioritní česká verze
+Allow: /terms/    # Veřejné obchodní podmínky
+Allow: /fonts/    # Písma pro renderování
+Allow: /images/   # Obrázky pro indexaci
+Allow: /js/       # Interaktivní skripty
+Allow: /css/      # CSS mobile-first
+Allow: /*.webp$   # Obrázky WebP
+Allow: /*.jpg$    # Obrázky JPG
+Allow: /*.png$    # Obrázky PNG
+Allow: /*.gif$    # Obrázky GIF
+Allow: /*.js$     # JavaScriptové skripty
+Allow: /*.css$    # CSS soubory
+Disallow: /csp-report-endpoint/  # Ochrana CSP
+Disallow: /contact/             # Kontaktní stránka
+Disallow: /privacy/             # Zásady ochrany osobních údajů
+Disallow: /checkout/            # Transakční cesty
+Disallow: /search/              # Vyhledávací stránky
+Disallow: /api/                 # API endpointy
+Disallow: /test/                # Testovací složky
+Disallow: /staging/             # Staging prostředí
+Clean-param: utm_source&utm_medium&utm_campaign&lang&session_id  # Užitečné parametry
 
-# Bloquer des URL avec paramètres inutiles pour l'indexation
-Disallow: /*?debug=true
-Disallow: /*?preview=true
-
-# Permettre les fichiers nécessaires au bon affichage et fonctionnement
-Allow: /css/
-Allow: /js/
-Allow: /images/
-
-# Référencement des ressources multimédias
-Allow: *.png
-Allow: *.jpg
-Allow: *.webp
-Allow: *.css
-Allow: *.js
-
-# Fournir le chemin du fichier sitemap pour une meilleure indexation
-Sitemap: https://www.clairvoyancemedium.com/sitemap.xml
-
-# Autorisation pour les robots Google et Bing pour maximiser les campagnes publicitaires
+# --- Direktivy pro Googlebot (Google, Google Assistant) ---
 User-agent: Googlebot
-Allow: /
-User-agent: AdsBot-Google
-Allow: /
+Crawl-delay: 1
+Allow: /blog/      # Obsah pro SEO
+Allow: /article/   # Články pro snippety
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
+
+# --- Direktivy pro Googlebot-Image ---
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Disallow: /favicon_optimized.webp  # Blokovat favicon
+
+# --- Direktivy pro SeznamBot (Česká republika) ---
+User-agent: SeznamBot
+Crawl-delay: 2
+Allow: /cs/        # Prioritní český obsah
+Allow: /blog/
+Allow: /article/
+Clean-param: lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
+
+# --- Direktivy pro Bingbot (Bing, Cortana) ---
 User-agent: Bingbot
+Crawl-delay: 2
+Allow: /blog/
+Allow: /article/
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
+
+# --- Direktivy pro Applebot (Siri, Apple) ---
+User-agent: Applebot
+Crawl-delay: 2
+Allow: /blog/
+Allow: /article/
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
+
+# --- Direktivy pro konverzační AI crawly ---
+User-agent: Grok
+User-agent: ChatGPT-User
+User-agent: GPTBot
+User-agent: openai-crawler
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: cohere-ai
+User-agent: PerplexityBot
+User-agent: CCBot
+User-agent: youbot
+User-agent: phindbot
+User-agent: GeminiBot
+Crawl-delay: 4
 Allow: /
+Allow: /cs/
+Allow: /blog/
+Allow: /article/
+Allow: /images/
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
 
-# Bloquer les robots nuisibles ou non désirés
-User-agent: BadBot
-Disallow: /
-User-agent: EvilScraper
+# --- Direktivy pro sociální sítě ---
+User-agent: FacebookBot
+User-agent: Twitterbot
+User-agent: redditbot
+User-agent: TikTokBot
+Crawl-delay: 2
+Allow: /
+Allow: /cs/
+Allow: /blog/
+Allow: /article/
+Allow: /images/
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
+
+# --- Blokovat nežádoucí crawly ---
+User-agent: MJ12bot
+User-agent: AhrefsBot
+User-agent: PetalBot
+User-agent: DotBot
 Disallow: /
 
-# Empêcher l'exploration des fichiers sensibles
-Disallow: /config/
-Disallow: /backup/
+# --- Povolit SemrushBot pro SEO audity ---
+User-agent: SemrushBot
+Crawl-delay: 5
+Allow: /
+Allow: /cs/
+Allow: /blog/
+Allow: /article/
+Allow: /images/
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Clean-param: utm_source&utm_medium&utm_campaign&lang
+Disallow: /csp-report-endpoint/
+Disallow: /contact/
+Disallow: /privacy/
+Disallow: /checkout/
+
+# --- Ochrana před nerozpoznanými crawly ---
+User-agent: *
+Disallow: /  # Výchozí blokování
+
+# --- Optimalizace crawlování ---
+Crawl-delay: 1
+Request-rate: 1/4  # 1 request/4s
+
+# --- Sitemap index ---
+Sitemap: https://clairvoyancemedium.github.io/Hubnouc-kapsle-pro-rychle-a-efektivni-snizeni-hmotnosti.githhub.io/sitemap-index.xml
